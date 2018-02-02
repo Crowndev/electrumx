@@ -125,9 +125,8 @@ class Controller(ServerBase):
         return self.mempool.value(hashX)
 
     def sent_tx(self, tx_hash):
-        '''Call when a TX is sent.  Tells mempool to prioritize it.'''
+        '''Call when a TX is sent.'''
         self.txs_sent += 1
-        self.mempool.prioritize(tx_hash)
 
     def setup_bands(self):
         bands = []
@@ -206,15 +205,15 @@ class Controller(ServerBase):
                 self.next_log_sessions = time.time() + self.env.log_sessions
 
     async def wait_for_bp_catchup(self):
-        '''Wait for the block processor to catch up, then kick off server
-        background processes.'''
+        '''Wait for the block processor to catch up, and for the mempool to
+        synchronize, then kick off server background processes.'''
         await self.bp.caught_up_event.wait()
         self.logger.info('block processor has caught up')
+        self.ensure_future(self.mempool.main_loop())
+        await self.mempool.synchronized_event.wait()
         self.ensure_future(self.peer_mgr.main_loop())
         self.ensure_future(self.log_start_external_servers())
         self.ensure_future(self.housekeeping())
-        self.ensure_future(self.mempool.main_loop())
-        self.ensure_future(self.notify())
 
     def close_servers(self, kinds):
         '''Close the servers of the given kinds (TCP etc.).'''
@@ -272,27 +271,26 @@ class Controller(ServerBase):
             sslc.load_cert_chain(env.ssl_certfile, keyfile=env.ssl_keyfile)
             await self.start_server('SSL', host, env.ssl_port, ssl=sslc)
 
-    async def notify(self):
+    def notify_sessions(self, touched):
         '''Notify sessions about height changes and touched addresses.'''
-        while True:
-            await self.mempool.touched_event.wait()
-            touched = self.mempool.touched.copy()
-            self.mempool.touched.clear()
-            self.mempool.touched_event.clear()
+        # Invalidate caches
+        hc = self.history_cache
+        for hashX in set(hc).intersection(touched):
+            del hc[hashX]
 
-            # Invalidate caches
-            hc = self.history_cache
-            for hashX in set(hc).intersection(touched):
-                del hc[hashX]
-            if self.bp.db_height != self.cache_height:
-                self.cache_height = self.bp.db_height
-                self.header_cache.clear()
+        height = self.bp.db_height
+        if height != self.cache_height:
+            self.cache_height = height
+            self.header_cache.clear()
 
-            # Make a copy; self.sessions can change whilst await-ing
-            sessions = [s for s in self.sessions
-                        if isinstance(s, self.coin.SESSIONCLS)]
-            for session in sessions:
-                await session.notify(self.bp.db_height, touched)
+        # Height notifications are synchronous.  Those sessions with
+        # touched addresses are scheduled for asynchronous completion
+        for session in self.sessions:
+            if isinstance(session, LocalRPC):
+                continue
+            session_touched = session.notify(height, touched)
+            if session_touched is not None:
+                self.ensure_future(session.notify_async(session_touched))
 
     def notify_peers(self, updates):
         '''Notify of peer updates.'''
@@ -827,6 +825,14 @@ class Controller(ServerBase):
         number = self.non_negative_integer(number)
         return await self.daemon_request('estimatefee', [number])
 
+    def mempool_get_fee_histogram(self):
+        '''Memory pool fee histogram.
+
+        TODO: The server should detect and discount transactions that
+        never get mined when they should.
+        '''
+        return self.mempool.get_fee_histogram()
+
     async def relayfee(self):
         '''The minimum fee a low-priority tx must pay in order to be accepted
         to the daemon's memory pool.'''
@@ -875,7 +881,7 @@ class Controller(ServerBase):
         if not raw_tx:
             return None
         raw_tx = util.hex_to_bytes(raw_tx)
-        tx, tx_hash = self.coin.DESERIALIZER(raw_tx).read_tx()
+        tx = self.coin.DESERIALIZER(raw_tx).read_tx()
         if index >= len(tx.outputs):
             return None
         return self.coin.address_from_script(tx.outputs[index].pk_script)
