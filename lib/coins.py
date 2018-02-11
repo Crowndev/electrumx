@@ -1140,6 +1140,7 @@ class Crown(AuxPowMixin, Coin):
     TX_PER_BLOCK = 10
     RPC_PORT = 9341
     REORG_LIMIT = 1000
+    CHUNK_SIZE = 20160
     PEERS = [
         'sgp-crwseed.crowndns.info s t',
         'blr-crwseed.crowndns.info s t',
