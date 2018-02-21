@@ -1140,7 +1140,7 @@ class Crown(AuxPowMixin, Coin):
     TX_PER_BLOCK = 10
     RPC_PORT = 9341
     REORG_LIMIT = 1000
-    CHUNK_SIZE = 20160
+    CHUNK_SIZE = 1008
     PEERS = [
         'sgp-crwseed.crowndns.info s t',
         'blr-crwseed.crowndns.info s t',
@@ -1151,6 +1151,25 @@ class Crown(AuxPowMixin, Coin):
         'lon-crwseed.crowndns.info s t',
         'fra-crwseed.crowndns.info s t',
     ]
+
+    @classmethod
+    def is_auxpow_block(cls, raw_header):
+        version, = struct.unpack('<I', raw_header[:4])
+        if version & cls.DESERIALIZER.VERSION_AUXPOW:
+            return True
+        return False
+
+    @classmethod
+    def electrum_header(cls, raw_header, height):
+        header = super().electrum_header(raw_header[:cls.BASIC_HEADER_SIZE], height)
+        header['block_height'] = height
+        if header['version'] & cls.DESERIALIZER.VERSION_AUXPOW:
+            header['parent_block'] = super().electrum_header(raw_header[-cls.BASIC_HEADER_SIZE:], height)
+        else:
+            # construct dummy parent_block object with 80 byte length
+            header['parent_block'] = '0'*cls.BASIC_HEADER_SIZE*2
+
+        return header
 
 
 class Fujicoin(Coin):

@@ -750,10 +750,27 @@ class Controller(ServerBase):
     def get_chunk(self, index):
         '''Return header chunk as hex.  Index is a non-negative integer.'''
         chunk_size = self.coin.CHUNK_SIZE
+        header_size = self.coin.BASIC_HEADER_SIZE
         next_height = self.bp.db_height + 1
         start_height = min(index * chunk_size, next_height)
         count = min(next_height - start_height, chunk_size)
-        return self.bp.read_headers(start_height, count).hex()
+        # special treatment for crown auxpow blocks
+        is_auxpow_block = getattr(self.coin, 'is_auxpow_block')
+        if is_auxpow_block:
+            # header size always aligned to 160 bytes, takes only block
+            # header and parent_block header from auxpow block
+            result = b''
+            for i in range(count):
+                raw_header = self.bp.read_headers(start_height + i, 1)
+                result += raw_header[:header_size]
+                if self.coin.is_auxpow_block(raw_header):
+                    result += raw_header[-header_size:]
+                else:
+                    # construct dummy object to send with hex 0x00
+                    result += b'\0'*header_size
+        else:
+            result = self.bp.read_headers(start_height, count)
+        return result.hex()
 
     # Client RPC "blockchain" command handlers
 
