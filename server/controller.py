@@ -755,7 +755,7 @@ class Controller(ServerBase):
         start_height = min(index * chunk_size, next_height)
         count = min(next_height - start_height, chunk_size)
         # special treatment for crown auxpow blocks
-        is_auxpow_block = getattr(self.coin, 'is_auxpow_block')
+        is_auxpow_block = getattr(self.coin, 'is_auxpow_block', None)
         if is_auxpow_block:
             # header size always aligned to 160 bytes, takes only block
             # header and parent_block header from auxpow block
