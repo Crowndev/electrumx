@@ -1172,6 +1172,26 @@ class Crown(AuxPowMixin, Coin):
         return header
 
 
+class CrownTestnet(AuxPowMixin, Coin):
+    NAME = "CrownTestnet"
+    SHORTNAME = "tCRW"
+    NET = "testnet"
+    XPUB_VERBYTES = bytes.fromhex("043587cf")
+    XPRV_VERBYTES = bytes.fromhex("04358394")
+    P2PKH_VERBYTE = bytes.fromhex("6f")
+    P2SH_VERBYTES = [bytes.fromhex("c4")]
+    WIF_BYTE = bytes.fromhex("ef")
+    GENESIS_HASH = ('0000000085370d5e122f64f4ab19c686'
+                    '14ff3df78c8d13cb814fd7e69a1dc6da')
+    TX_COUNT = 13336629
+    TX_COUNT_HEIGHT = 1268206
+    TX_PER_BLOCK = 10
+    RPC_PORT = 19341
+    REORG_LIMIT = 1000
+    CHUNK_SIZE = 2016
+    PEERS = []
+
+
 class Fujicoin(Coin):
     NAME = "Fujicoin"
     SHORTNAME = "FJC"
