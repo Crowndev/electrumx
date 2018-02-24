@@ -1124,23 +1124,14 @@ class MonacoinTestnet(Monacoin):
     ]
 
 
-class Crown(AuxPowMixin, Coin):
+class CrownBase(AuxPowMixin, Coin):
     NAME = "Crown"
-    SHORTNAME = "CRW"
     NET = "mainnet"
-    XPUB_VERBYTES = bytes.fromhex("0488b21e")
-    XPRV_VERBYTES = bytes.fromhex("0488ade4")
-    P2PKH_VERBYTE = bytes.fromhex("00")
-    P2SH_VERBYTES = [bytes.fromhex("1c")]
-    WIF_BYTE = bytes.fromhex("80")
-    GENESIS_HASH = ('0000000085370d5e122f64f4ab19c686'
-                    '14ff3df78c8d13cb814fd7e69a1dc6da')
+    SHORTNAME = "CRW"
     TX_COUNT = 13336629
     TX_COUNT_HEIGHT = 1268206
     TX_PER_BLOCK = 10
-    RPC_PORT = 9341
     REORG_LIMIT = 1000
-    CHUNK_SIZE = 1008
     PEERS = [
         'sgp-crwseed.crowndns.info s t',
         'blr-crwseed.crowndns.info s t',
@@ -1172,9 +1163,19 @@ class Crown(AuxPowMixin, Coin):
         return header
 
 
-class CrownTestnet(AuxPowMixin, Coin):
-    NAME = "CrownTestnet"
-    SHORTNAME = "tCRW"
+class Crown(CrownBase):
+    XPUB_VERBYTES = bytes.fromhex("0488b21e")
+    XPRV_VERBYTES = bytes.fromhex("0488ade4")
+    P2PKH_VERBYTE = bytes.fromhex("00")
+    P2SH_VERBYTES = [bytes.fromhex("1c")]
+    WIF_BYTE = bytes.fromhex("80")
+    GENESIS_HASH = ('0000000085370d5e122f64f4ab19c686'
+                    '14ff3df78c8d13cb814fd7e69a1dc6da')
+    RPC_PORT = 9341
+    CHUNK_SIZE = 1008
+
+
+class CrownTestnet(CrownBase):
     NET = "testnet"
     XPUB_VERBYTES = bytes.fromhex("043587cf")
     XPRV_VERBYTES = bytes.fromhex("04358394")
@@ -1183,12 +1184,8 @@ class CrownTestnet(AuxPowMixin, Coin):
     WIF_BYTE = bytes.fromhex("ef")
     GENESIS_HASH = ('0000000085370d5e122f64f4ab19c686'
                     '14ff3df78c8d13cb814fd7e69a1dc6da')
-    TX_COUNT = 13336629
-    TX_COUNT_HEIGHT = 1268206
-    TX_PER_BLOCK = 10
     RPC_PORT = 19341
-    REORG_LIMIT = 1000
-    CHUNK_SIZE = 2016
+    CHUNK_SIZE = 960
     PEERS = []
 
 
