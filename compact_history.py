@@ -45,6 +45,11 @@ def compact_history():
         raise RuntimeError('Python >= 3.6 is required to run ElectrumX')
 
     environ['DAEMON_URL'] = ''   # Avoid Env erroring out
+    # minimal configurations that need to be set
+    # comment out and configure for your case
+    # environ['DB_DIRECTORY'] = '/db'
+    # environ['COIN'] = 'Crown'
+    # environ['NET'] = 'mainnet'
     env = Env()
     db = DB(env)
 
