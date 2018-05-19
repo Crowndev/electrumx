@@ -46,10 +46,10 @@ def compact_history():
 
     environ['DAEMON_URL'] = ''   # Avoid Env erroring out
     # minimal configurations that need to be set
-    # comment out and configure for your case
-    # environ['DB_DIRECTORY'] = '/db'
-    # environ['COIN'] = 'Crown'
-    # environ['NET'] = 'mainnet'
+    environ['COIN'] = 'Crown'
+    environ['NET'] = 'mainnet'
+    # Configure it for your case, the value should be the same as set in /etc/electrumx.conf
+    environ['DB_DIRECTORY'] = '/db'
     env = Env()
     db = DB(env)
 
