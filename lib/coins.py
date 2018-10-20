@@ -1166,8 +1166,8 @@ class CrownBase(AuxPowMixin, Coin):
 class Crown(CrownBase):
     XPUB_VERBYTES = bytes.fromhex("0488b21e")
     XPRV_VERBYTES = bytes.fromhex("0488ade4")
-    P2PKH_VERBYTE = bytes.fromhex("00")
-    P2SH_VERBYTES = [bytes.fromhex("1c")]
+    P2PKH_VERBYTE = bytes.fromhex("017507")
+    P2SH_VERBYTES = [bytes.fromhex("0174f1")]
     WIF_BYTE = bytes.fromhex("80")
     GENESIS_HASH = ('0000000085370d5e122f64f4ab19c686'
                     '14ff3df78c8d13cb814fd7e69a1dc6da')
@@ -1179,8 +1179,8 @@ class CrownTestnet(CrownBase):
     NET = "testnet"
     XPUB_VERBYTES = bytes.fromhex("043587cf")
     XPRV_VERBYTES = bytes.fromhex("04358394")
-    P2PKH_VERBYTE = bytes.fromhex("6f")
-    P2SH_VERBYTES = [bytes.fromhex("c4")]
+    P2PKH_VERBYTE = bytes.fromhex("017acd67")
+    P2SH_VERBYTES = [bytes.fromhex("017acd51")]
     WIF_BYTE = bytes.fromhex("ef")
     GENESIS_HASH = ('0000000085370d5e122f64f4ab19c686'
                     '14ff3df78c8d13cb814fd7e69a1dc6da')
